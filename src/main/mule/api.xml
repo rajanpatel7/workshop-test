@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway" xmlns:product-api="http://www.mulesoft.org/schema/mule/product-api" xmlns:orderfulfillment-api="http://www.mulesoft.org/schema/mule/orderfulfillment-api" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:order-api="http://www.mulesoft.org/schema/mule/order-api" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd 
+http://www.mulesoft.org/schema/mule/order-api http://www.mulesoft.org/schema/mule/order-api/current/mule-order-api.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/orderfulfillment-api http://www.mulesoft.org/schema/mule/orderfulfillment-api/current/mule-orderfulfillment-api.xsd
+http://www.mulesoft.org/schema/mule/product-api http://www.mulesoft.org/schema/mule/product-api/current/mule-product-api.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+    <http:listener-config name="api-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8081" />
+    </http:listener-config>
+    <apikit:config name="api-config" raml="api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <order-api:config name="Order_API_Config" doc:name="Order API Config" doc:id="09d7d370-c5e6-435d-9320-9b2141627e14" property_host="${domain.api.host.orders}" property_port="80" property_protocol="HTTP"/>
+	<configuration-properties doc:name="Configuration properties" doc:id="bd185405-659f-4dfd-b548-5f921c7130de" file="configuration/config.yaml" />
+	<orderfulfillment-api:config name="Order_fulfillment_API_Config" doc:name="Order fulfillment API Config" doc:id="f48a9dfc-fcd9-4b45-b38a-8fe5a276d905" property_host="${process.api.host.fulfillment}" property_port="80" />
+	<api-gateway:autodiscovery apiId="15857988" doc:name="API Autodiscovery" doc:id="8c083ef6-5f8a-4809-b81e-0aa921478db6" flowRef="api-main" />
+	<flow name="api-main">
+        <http:listener config-ref="api-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="api-config" doc:name="APIkit Router"/>
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND,HTTP:NOT_FOUND,VALIDATION:EMPTY_COLLECTION" doc:name="On Error Propagate" enableNotifications="true" logException="true">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="api-console">
+        <http:listener config-ref="api-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="api-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="put:\users\user\(user_id)\shopping_cart:application\json:api-config">
+		<os:store doc:name="Update User Shopping Cart" doc:id="6c77841f-40d3-48f7-8468-6f984791ea89" key="#[attributes.uriParams.user_id]">
+			<os:value ><![CDATA[#[%dw 2.0
+output application/json
+var orderPrice = lookup('calculate_price',(payload.items default []) map (item, index) -> {
+		productId: item.product_id as String,
+		quantity: item.quantity as String	 	
+}) as Number
+---
+{
+	last_modification_date: now(),
+	cost: {
+		price: orderPrice,
+		tax: orderPrice * p('tax_value'),
+		final_price: orderPrice * p('tax_value') + orderPrice
+	},
+	items: (payload.items default []) map (item , indexOfItem) -> {
+		product_id: item.product_id,
+		rel_product: p('rel_products_product') ++ (item.product_id default 0),
+		quantity: item.quantity
+	}
+}]]]></os:value>
+		</os:store>
+		<logger level="INFO" doc:name="Logger" doc:id="6b8f97ea-099d-4d9e-b7f0-d03fb14af8a6" message='"Object Store result: " + #[payload]'/>
+    </flow>
+    <flow name="get:\orders\order\(order_id):api-config">
+		<order-api:get-order-by-id doc:name="Get order by id" doc:id="4ca60afe-6bdc-445d-a5a3-2bfd1a1aa19f" config-ref="Order_API_Config" id="#[attributes.uriParams.order_id]" client-id="${app.client_id}" client-secret="${app.client_secret}"/>
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="0103dcd4-99c5-4fc8-87d2-23f96e7f642b">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var orderPrice = lookup('calculate_price',(payload.orderLineItems default []) map (item, index) -> {
+		productId: item.productId as String,
+		quantity: item.quantityOnHand as String	 	
+}) as Number
+---
+{
+  	order_id: payload.orderId,
+	tracking_code: payload.trackingNumber,
+	creation_date: payload.createdDate default "",
+	items: (payload.orderLineItems default []) map (product , indexOfProduct) -> {
+		product_id: product.productId,
+		quantity: product.quantityOnHand,
+		rel_product: "http://mobile-eapi-40.cloudhub.io.cloudhub.io/api" ++ (product.productId default "") ++ "?user_id=" ++ (payload.customerId default "0"),
+		product: {
+			id: product.productId
+		}
+	},
+	payment: {
+		credit_card_id: "",
+		rel_card: ""
+	},
+	cost: {
+		price: orderPrice,
+		tax: orderPrice * p('tax_value'),
+		final_price: orderPrice * p('tax_value') + orderPrice
+	},
+	rel_self: "/orders/order/" ++ (payload.orderId default "") ++ "?user_id=" ++ (payload.customerId default "0"),
+	shipping: {
+		rel_address: payload.orderId,
+		shipping_address_id: payload.orderId
+	}	
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="get:\products\product\(product_id):api-config">
+		<product-api:get-product-by-id doc:name="Get product by id" doc:id="14dd3b14-a141-4279-872a-19e51bd915fc" config-ref="Product_API_Config" id="#[attributes.uriParams.product_id]" client-id="${app.client_id}" client-secret="${app.client_secret}"/>
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="34cd9b21-ad56-42f9-a812-654cd11c7a7d">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	full_description: payload.description,
+	name: payload.name,
+	id: payload.id,
+	unit_price: payload.listPrice,
+	available_stock: payload.stock,
+	unit_original_price: payload.standardCost,
+	pictures: payload.images map (image , indexOfImage) -> image,
+	rel_self: p('rel_products_product') ++ (payload.id default "0"),
+	rating: 5
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="get:\products\search:api-config" tracking:enable-default-events="true">
+        <set-variable value="#[attributes.queryParams.name]" doc:name="Set Variable" doc:id="7ed8d484-afc5-4465-a7bc-ebdd8b4c9490" variableName="searchName"/>
+		<tracking:transaction doc:name="Set Transaction Id" doc:id="adde38f8-1ee4-4cf7-ba66-fb5292094ac5" id="#['get-products-search-' ++ uuid()]"/>
+		<product-api:get-products doc:name="Get products" doc:id="fd4c7f53-3a41-4d60-a845-cfbc5155d5a2" name="#[attributes.queryParams.name]" max-results="#[attributes.queryParams.maxResults]" offset="#[attributes.queryParams.offset]" client-id="${app.client_id}" client-secret="${app.client_secret}" config-ref="Product_API_Config"/>
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="ed43e954-4027-4c76-8af4-03452c925c84">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( product , indexOfPayload01 ) -> {
+	full_description: product.description,
+	name: product.name,
+	id: product.id,
+	unit_price: product.listPrice,
+	available_stock: product.stock,
+	pictures: product.images map ( image , indexOfImage ) -> image,
+	rel_self: p('rel_products_product') ++ (product.id default "0"),
+	unit_original_price: product.standardCost,
+	rating: 5
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<tracking:custom-event doc:name="Custom Business Event" doc:id="5447ef97-e5cd-4998-83e0-3c83eac70739" event-name="Product Search Event">
+			<tracking:meta-data key="Search String" value="#[vars.searchName]" />
+			<tracking:meta-data key="Search Results" value="#[payload.name]" />
+		</tracking:custom-event>
+    
+</flow>
+    <flow name="get:\orders\search:api-config">
+        <order-api:get-orders doc:name="Get orders" doc:id="f8ff861b-dd02-4508-8ba6-396b94e1e336" config-ref="Order_API_Config" customer-id="#[attributes.queryParams.user_id]" client-id="${app.client_id}" client-secret="${app.client_secret}"/>
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="7e08169b-9a76-400f-9dca-93e7e8e5dbf8">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+fun getOrderPrice(orderLineItems) = (lookup('calculate_price',(orderLineItems default []) map (item, index) -> {
+		productId: item.productId as String,
+		quantity: item.quantityOnHand as String	 	
+}) as Number)
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	cost: using (totalPrice = getOrderPrice(payload01.orderLineItems)) {
+		final_price: totalPrice,
+		price: totalPrice,
+		tax: totalPrice * p('tax_value')
+	},
+	creation_date: payload01.createDateTime,
+	order_id: payload01.orderId,
+	tracking_code: payload01.trackingNumber,
+	rel_self: p('rel_orders_order') ++ (payload01.orderId default ""),
+	items: payload01.orderLineItems map (product, indexOfProduct) -> {
+		product_id: product.productId as Number,
+		quantity: product.quantityOnHand as Number,
+		rel_product: p('rel_products_product') ++ (product.productId default "0") ++ "?user_id=" ++ (payload01.customerId default ""),
+		product: {
+			id: product.productId as Number
+		}
+	},
+	shipping: {
+		rel_address: payload01.orderId,
+		shipping_address_id: payload01.orderId
+	}
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="get:\users\user\(user_id)\shopping_cart:api-config">
+		<set-variable value="#[attributes.uriParams.user_id]" doc:name="Save UserID" doc:id="49c17f95-1732-4438-9b81-bd5e0f2690d9" variableName="user_id" />
+		<os:contains doc:name="Contains" doc:id="58f3f8c3-ea1d-44e2-bf94-c57d3c59ef08" key="#[vars.user_id]"/>
+		<choice doc:name="Choice" doc:id="f7a91ed0-355c-4ddd-be50-f3d250aa79b8" >
+			<when expression="#[payload == true]" >
+				<os:retrieve doc:name="Retrieve" doc:id="5e4d6be9-9c98-43c5-8e06-f2d109dbd5d4" key="#[vars.user_id]" />
+				<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="5e14af3a-283e-4ab8-b0aa-96b324c98602">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="611d7a78-60cf-4d6f-b29f-714d43c4faa1" message='"No Cart"' />
+				<ee:transform doc:name="Transform Message" doc:id="c26f2b2c-d3c4-423e-973f-b2122ce1685f">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	items: [],
+	cost: {
+		price: 0.0,
+		tax: 0.0,
+		final_price: 0.0
+	},
+	last_modification_date: ""
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+    </flow>
+    <flow name="post:\users\user\(user_id)\shopping_cart\confirmation:application\json:api-config">
+		<orderfulfillment-api:create-order-fulfillment doc:name="Create order fulfillment" doc:id="075391f9-e43d-4ee1-974a-df3a628e5eb8" config-ref="Order_fulfillment_API_Config" client-id="${app.client_id}" client-secret="${app.client_secret}">
+			<orderfulfillment-api:create-order-fulfillment-request-data ><![CDATA[#[%dw 2.0
+output application/java
+var orderPrice = lookup('calculate_price',(payload.items default []) map (item, indexOfItem) -> {
+		productId: item.product_id as String,
+		quantity: item.quantity as String	 	
+}) as Number
+---
+{
+	customer_id: attributes.uriParams.user_id,
+	status: "new",
+	price: orderPrice as Number,
+	products: (payload.items default []) map (item, indexOfItem) -> {
+		id: item.product_id as Number, 
+		productName: lookup('get_product_name', item.product_id),
+		quantity: item.quantity 
+	}
+}]]]></orderfulfillment-api:create-order-fulfillment-request-data>
+		</orderfulfillment-api:create-order-fulfillment>
+		<order-api:get-order-by-id doc:name="Get Order Detail" doc:id="7f56449e-ce6b-4b3d-86fb-52a155e608c6" id="#[payload.order_id]" client-id="${app.client_id}" client-secret="${app.client_secret}" config-ref="Order_API_Config"/>
+		<ee:transform doc:name="Create Order Response" doc:id="a5f27c0a-d0c2-4173-b911-b4c10b65e2bd" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	items: payload.orderLineItems map (product , indexOfProduct) -> {
+		product_id: product.productId as Number,
+		quantity: product.quantityOnHand as Number,
+		rel_product: p('rel_products_product') ++ (product.productId default ""),
+		product: {
+			id: product.productId as Number
+		}
+	},
+	order_id: payload.orderId,
+	order_number: payload.orderId,
+	tracking_code: payload.trackingNumber
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<async doc:name="Async" doc:id="c0efcadf-5d49-41c6-98c7-426e3d6dbb6e" >
+			<os:remove doc:name="Delete Shopping Cart" doc:id="e6e10c8d-7332-43c5-82a1-e88465a2f8c4" key="#[vars.user_id]"/>
+		</async>
+    </flow>
+</mule>

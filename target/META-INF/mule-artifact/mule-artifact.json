@@ -1,0 +1,47 @@
+{
+  "configs": [
+    "api.xml",
+    "subflows.xml"
+  ],
+  "secureProperties": [],
+  "redeploymentEnabled": true,
+  "name": "2fba9952-25fa-4b1d-ba82-b66a07bcba2f:omni-channel-api:1.0.0",
+  "minMuleVersion": "4.1.4",
+  "requiredProduct": "MULE_EE",
+  "classLoaderModelLoaderDescriptor": {
+    "id": "mule",
+    "attributes": {
+      "exportedPackages": [],
+      "exportedResources": [
+        "log4j2.xml",
+        "configuration/config.yaml",
+        "application-types.xml",
+        "api/exchange_modules/ea35fd7f-d208-4562-a17b-09b057cdfe1b/omnichannel-datatype/1.0.0/omni-channel-datatype.raml",
+        "api/exchange_modules/ea35fd7f-d208-4562-a17b-09b057cdfe1b/error-datatype/1.0.0/error-datatype.raml",
+        "api/exchange_modules/ea35fd7f-d208-4562-a17b-09b057cdfe1b/pageable-trait/1.0.0/pageable-trait.raml",
+        "api/exchange_modules/ea35fd7f-d208-4562-a17b-09b057cdfe1b/rest-headers-trait/1.0.0/rest-headers-trait.raml",
+        "api/exchange_modules/ea35fd7f-d208-4562-a17b-09b057cdfe1b/client-id-secured-trait/1.0.0/client-id-secured.raml",
+        "api/exchange_modules/ea35fd7f-d208-4562-a17b-09b057cdfe1b/client-id-secured-trait/1.0.0/client-id-enforcement-trait.raml",
+        "api/omni-channel-experience-api.raml",
+        "api/api.raml",
+        "api/examples/error-collection.raml",
+        "api/examples/product-collection.raml",
+        "api/examples/order-single.raml",
+        "api/examples/order-confirmation-single.raml",
+        "api/examples/shoppingcart-single-update.raml",
+        "api/examples/product-single.raml",
+        "api/examples/shoppingcart-single.raml",
+        "api/examples/order-collection.raml",
+        "api/examples/error-single.raml",
+        "api/examples/user-single.raml",
+        "api/examples/order-confirmation-request-single.raml",
+        "subflows.xml",
+        "api.xml"
+      ]
+    }
+  },
+  "bundleDescriptorLoader": {
+    "id": "mule",
+    "attributes": {}
+  }
+}

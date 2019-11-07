@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="ProductItem" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+type: object
+properties:
+  productId:
+    type: string
+  quantity:
+    type: string    
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#3e6610bc-9625-497e-b321-4742b721b38f">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="ProductItem"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

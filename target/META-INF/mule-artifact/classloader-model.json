@@ -1,0 +1,92 @@
+{
+  "version": "1.1.0",
+  "artifactCoordinates": {
+    "groupId": "2fba9952-25fa-4b1d-ba82-b66a07bcba2f",
+    "artifactId": "omni-channel-api",
+    "version": "1.0.0",
+    "type": "jar",
+    "classifier": "mule-application"
+  },
+  "dependencies": [
+    {
+      "artifactCoordinates": {
+        "groupId": "c19b7031-3dc4-4efe-a1b1-4310a08df090.system-ap-is",
+        "artifactId": "order-api",
+        "version": "1.0.0",
+        "type": "jar",
+        "classifier": "mule-plugin"
+      },
+      "uri": "repository/c19b7031-3dc4-4efe-a1b1-4310a08df090/system-ap-is/order-api/1.0.0/order-api-1.0.0-mule-plugin.jar"
+    },
+    {
+      "artifactCoordinates": {
+        "groupId": "c19b7031-3dc4-4efe-a1b1-4310a08df090.process-ap-is",
+        "artifactId": "order-fulfillment-api",
+        "version": "1.0.0",
+        "type": "jar",
+        "classifier": "mule-plugin"
+      },
+      "uri": "repository/c19b7031-3dc4-4efe-a1b1-4310a08df090/process-ap-is/order-fulfillment-api/1.0.0/order-fulfillment-api-1.0.0-mule-plugin.jar"
+    },
+    {
+      "artifactCoordinates": {
+        "groupId": "c19b7031-3dc4-4efe-a1b1-4310a08df090.system-ap-is",
+        "artifactId": "product-api",
+        "version": "1.0.0",
+        "type": "jar",
+        "classifier": "mule-plugin"
+      },
+      "uri": "repository/c19b7031-3dc4-4efe-a1b1-4310a08df090/system-ap-is/product-api/1.0.0/product-api-1.0.0-mule-plugin.jar"
+    },
+    {
+      "artifactCoordinates": {
+        "groupId": "org.mule.modules",
+        "artifactId": "mule-apikit-module",
+        "version": "1.3.6",
+        "type": "jar",
+        "classifier": "mule-plugin"
+      },
+      "uri": "repository/org/mule/modules/mule-apikit-module/1.3.6/mule-apikit-module-1.3.6-mule-plugin.jar"
+    },
+    {
+      "artifactCoordinates": {
+        "groupId": "org.mule.connectors",
+        "artifactId": "mule-objectstore-connector",
+        "version": "1.1.3",
+        "type": "jar",
+        "classifier": "mule-plugin"
+      },
+      "uri": "repository/org/mule/connectors/mule-objectstore-connector/1.1.3/mule-objectstore-connector-1.1.3-mule-plugin.jar"
+    },
+    {
+      "artifactCoordinates": {
+        "groupId": "org.mule.modules",
+        "artifactId": "mule-validation-module",
+        "version": "1.4.0",
+        "type": "jar",
+        "classifier": "mule-plugin"
+      },
+      "uri": "repository/org/mule/modules/mule-validation-module/1.4.0/mule-validation-module-1.4.0-mule-plugin.jar"
+    },
+    {
+      "artifactCoordinates": {
+        "groupId": "org.mule.connectors",
+        "artifactId": "mule-sockets-connector",
+        "version": "1.1.5",
+        "type": "jar",
+        "classifier": "mule-plugin"
+      },
+      "uri": "repository/org/mule/connectors/mule-sockets-connector/1.1.5/mule-sockets-connector-1.1.5-mule-plugin.jar"
+    },
+    {
+      "artifactCoordinates": {
+        "groupId": "org.mule.connectors",
+        "artifactId": "mule-http-connector",
+        "version": "1.5.7",
+        "type": "jar",
+        "classifier": "mule-plugin"
+      },
+      "uri": "repository/org/mule/connectors/mule-http-connector/1.5.7/mule-http-connector-1.5.7-mule-plugin.jar"
+    }
+  ]
+}

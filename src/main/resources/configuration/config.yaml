@@ -1,0 +1,22 @@
+domain:
+  api:
+    host:
+      products: "mythical-product-api-v4-0.cloudhub.io"
+      orders: "mythical-order-api-v4-0.cloudhub.io"
+      customers: "mythical-customer-api-4-0.cloudhub.io"
+      
+process:
+  api: 
+    host:
+      fulfillment: "mythical-order-fulfillment-api-v4-0.cloudhub.io"
+      
+app:
+  client_id: "11def1b704e24d87a5ea5769772c90a7"
+  client_secret: "88845E529f1F42E4a5aC96Fd504c3e01"
+  
+tax_value: "0.07"
+
+rel_products_product: "${exp_api_base_url}/products/product/"
+rel_orders_order: "${exp_api_base_url}/orders/order/"
+rel_orders_search: "${exp_api_base_url}/orders/search"
+exp_api_base_url: "http://mobile-eapi-40.cloudhub.io.cloudhub.io/api"

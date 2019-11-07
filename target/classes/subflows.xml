@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:product-api="http://www.mulesoft.org/schema/mule/product-api"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/product-api http://www.mulesoft.org/schema/mule/product-api/current/mule-product-api.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<product-api:config name="Product_API_Config" doc:name="Product API Config" doc:id="aa4f7bb1-6482-40fb-995e-d9f8c9da3cb3" property_host="${domain.api.host.products}" property_port="80" />
+	<flow name="calculate_price" doc:id="b695ab63-04f8-4e62-9e4a-b23091f18bd1" >
+		<set-variable value="#[0]" doc:name="Store Price" doc:id="b9f121b1-fd1c-4552-b4ea-cefa8efedb9a" variableName="price"/>
+		<foreach doc:name="For Each" doc:id="269b6b72-5036-421a-a333-8a40b21143e5" >
+			<set-variable value="#[payload.quantity]" doc:name="Save Quantity" doc:id="3e6610bc-9625-497e-b321-4742b721b38f" variableName="quantity"/>
+			<product-api:get-product-by-id doc:name="Get product by id" doc:id="b7c774ea-3423-4e86-b936-5538598c5d14" config-ref="Product_API_Config" id="#[payload.productId]" client-id="${app.client_id}" client-secret="${app.client_secret}"/>
+			<ee:transform doc:name="Transform Message" doc:id="ad846174-7985-4456-9802-957539bfb0de" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="price" ><![CDATA[%dw 2.0
+output application/java
+---
+payload.listPrice * (vars.quantity default 0) + vars.price]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</foreach>
+		<ee:transform doc:name="Transform Message" doc:id="fc711be9-437d-408d-a5df-3725c0ca31ab" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+vars.price]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="get_product_name" doc:id="af44d00a-f90a-4d55-a7e5-3929b12db717" >
+		<product-api:get-product-by-id doc:name="Get product by id" doc:id="392cb3b0-19b6-4370-a776-f9bd584fc277" config-ref="Product_API_Config" id="#[payload]" client-id="${app.client_id}" client-secret="${app.client_secret}" />
+		<ee:transform doc:name="Transform Message" doc:id="637b480d-84e3-433f-a1f5-a67cf42123cb" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload.name]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="462da53d-b3e1-4fa5-a285-309d4e03e9f5" >
+				<logger level="ERROR" doc:name="Logger" doc:id="b678fd8d-97f3-4faa-95b2-fce8cd8d0721" message="No Product Found"/>
+				<ee:transform doc:name="Transform Message" doc:id="7aa050c8-3997-47b1-96f3-3ec5f45e6dbc" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+"Undefined"]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+</mule>
