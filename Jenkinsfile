@@ -42,6 +42,6 @@ pipeline {
   }
 
   tools {
-    maven 'null'
+    maven 'm3'
   }
 }
