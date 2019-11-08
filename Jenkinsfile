@@ -1,9 +1,12 @@
 pipeline {
 
-  agent any
-  environment {
+	agent {
+   		label 'mule-builder'
+  	}
+  	
+  	environment {
     //adding a comment for the commit test
-    DEPLOY_CREDS = credentials('deploy-anypoint-user')
+    DEPLOY_CREDS = credentials('rajan-deploy-anypoint-user')
     MULE_VERSION = '4.1.4'
     BG = "Rajan Patel ALC Workshop trial"
     WORKER = "Micro"
