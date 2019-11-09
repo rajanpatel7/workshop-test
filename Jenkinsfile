@@ -4,6 +4,11 @@ pipeline {
    		label 'mule-builder'
   	}
   	
+  	withMaven(
+              mavenSettingsConfig: 'maven_settings'){
+        sh 'mvn -B clean package -DskipTests'
+    }
+  	
   	environment {
     //adding a comment for the commit test
     DEPLOY_CREDS = credentials('rajan-deploy-anypoint-user')
