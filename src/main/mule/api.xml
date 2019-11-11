@@ -244,6 +244,7 @@ payload map ( product , indexOfPayload01 ) -> {
 }]]></ee:set-payload>
             </ee:message>
         </ee:transform>
+		<logger level="INFO" doc:name="" doc:id="693a6feb-0d60-4f68-9cdc-c5e949136535" message="Hello from the Mule Workshop!"/>
 		<tracking:custom-event doc:name="Custom Business Event" doc:id="5447ef97-e5cd-4998-83e0-3c83eac70739" event-name="Product Search Event">
 			<tracking:meta-data key="Search String" value="#[vars.searchName]" />
 			<tracking:meta-data key="Search Results" value="#[payload.name]" />
