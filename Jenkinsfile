@@ -20,13 +20,13 @@ agent {
       }
     }
 
-     stage('Test') {
-       steps {
-         withMaven(mavenSettingsConfig: 'mvn-settings') {  
-           sh "mvn test"
-         }
-       }
-     }
+    // stage('Test') {
+    //   steps {
+    //     withMaven(mavenSettingsConfig: 'mvn-settings') {  
+    //       sh "mvn test"
+    //     }
+    //   }
+    // }
 
      stage('Deploy Development') {
       environment {
