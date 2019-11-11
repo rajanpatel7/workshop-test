@@ -65,13 +65,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <coverage>
-                        <runCoverage>true</runCoverage>
-                        <formats>
-                            <format>html</format>
-                        </formats>
-                    </coverage>
-                    <cloudHubDeployment>
+                <cloudHubDeployment>
 				    <uri>https://anypoint.mulesoft.com</uri>
 				    <muleVersion>${mule.version}</muleVersion>
 				    <!-- Deploy User Parameter -->
@@ -82,7 +76,13 @@
 				    <applicationName>${cloudhub.app}</applicationName>
 				    <businessGroup>${cloudhub.bg}</businessGroup>
 				    <workerType>${cloudhub.worker}</workerType>
-					</cloudHubDeployment>
+				</cloudHubDeployment>
+                    <coverage>
+                        <runCoverage>true</runCoverage>
+                        <formats>
+                            <format>html</format>
+                        </formats>
+                    </coverage>
                 </configuration>
             </plugin>
         </plugins>
