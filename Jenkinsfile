@@ -1,15 +1,10 @@
 pipeline {
 
-	agent {
-   		label 'mule-builder'
-  	}
-  	
-  	withMaven(
-              mavenSettingsConfig: 'maven_settings'){
-        sh 'mvn -B clean package -DskipTests'
-    }
-  	
-  	environment {
+agent {
+    label 'mule-builder'
+  }
+ 
+  environment {
     //adding a comment for the commit test
     DEPLOY_CREDS = credentials('rajan-deploy-anypoint-user')
     MULE_VERSION = '4.1.4'
@@ -19,15 +14,19 @@ pipeline {
   stages {
     stage('Build') {
       steps {
+          withMaven(mavenSettingsConfig: 'mvn-settings') {
             sh 'mvn -B -U -e -V clean -DskipTests package'
+          }
       }
     }
 
-    stage('Test') {
-      steps {
-          sh "mvn test"
-      }
-    }
+    // stage('Test') {
+    //   steps {
+    //     withMaven(mavenSettingsConfig: 'mvn-settings') {  
+    //       sh "mvn test"
+    //     }
+    //   }
+    // }
 
      stage('Deploy Development') {
       environment {
